@@ -9,6 +9,12 @@
  *  Trace IOConnectCallStructMethod and IOConnectCallScalarMethod explicitly
 */
 
+// Settings
+var BACKTRACE_LIBDISPATCH = false;
+var BACKTRACE_IOCONNECTCALL = true;
+var HEXDUMP_IOCONNECTCALL_POINTERS = true;
+
+
 // Helper Functions
 // 
 function log_function_call(fname, args, argc){
@@ -139,17 +145,19 @@ Interceptor.attach(_ioconnectcallasyncscalarmethod_addr, {
             var val = input_scalar.add(0x8 * i).readPointer();
             console.log("        input[" + i + "] = " + val );
             try{
-                console.log(hexdump(val, {
-                  offset: 0,
-                  length: 64,
-                  header: true,
-                  ansi: true
-                }));
+                if (HEXDUMP_IOCONNECTCALL_POINTERS)
+                    console.log(hexdump(val, {
+                      offset: 0,
+                      length: 64,
+                      header: true,
+                      ansi: true
+                    }));
             } catch(e){};
         }
-        console.log('    IOConnectCallAsyncScalarMethod backtrace:\n    ' +
-        Thread.backtrace(this.context, Backtracer.ACCURATE)
-            .map(DebugSymbol.fromAddress).join('\n    ') + '\n');
+        if(BACKTRACE_IOCONNECTCALL)
+            console.log('    IOConnectCallAsyncScalarMethod backtrace:\n    ' +
+            Thread.backtrace(this.context, Backtracer.ACCURATE)
+                .map(DebugSymbol.fromAddress).join('\n    ') + '\n');
     },
     onLeave: function(retval){
 
@@ -195,15 +203,16 @@ Interceptor.attach(_dispatch_async_addr, {
     	var queue = this.context.x0;
     	// console.log('dispatch queue ptr: ' + queue);
     	var label = _dispatch_queue_get_label(queue);
-    	console.log('\n\nCalling queue: ' + label.readUtf8String());
+    	console.log('\nCalling queue: ' + label.readUtf8String());
     	
     	//print the nsstackblock function we're going to call
     	//should be at offset 0x10 ... it's the actual address but only the least significant bytes are relevant
     	var dispatch_block = this.context.x1;
     	console.log('Callback function: ' + DebugSymbol.fromAddress(dispatch_block.add(0x10).readPointer()));
     	
-        console.log('dispatch_async backtrace:\n' +
-        Thread.backtrace(this.context, Backtracer.ACCURATE)
-            .map(DebugSymbol.fromAddress).join('\n') + '\n');
+        if (BACKTRACE_LIBDISPATCH)
+            console.log('dispatch_async backtrace:\n' +
+            Thread.backtrace(this.context, Backtracer.ACCURATE)
+                .map(DebugSymbol.fromAddress).join('\n') + '\n');
     },
 });
