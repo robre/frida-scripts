@@ -73,14 +73,38 @@ Interceptor.attach(_ioconnectcallmethod_addr, {
         var input_struct_count = args[5].toInt32();
         var output_scalar = args[6];
         var output_scalar_count = 0;
-        console.log("IOConnectCallMethod(" +  
+        console.log("\nIOConnectCallMethod(" +  
             connection + ", " + 
             selector + ", " + 
             input_scalar_count + ", " + 
             input_struct_count + ", " + 
             output_scalar_count + ", " + 
             ");");
-        console.log("IOConnectCallMethod Service = " + service_ids[connection][0])
+        try{
+            console.log("    IOConnectCallMethod Service = " + service_ids[connection][0])
+        } catch(e) {
+            console.log("    IOConnectCallMethod Service = UNKNOWN ("  + connection + ")")
+        }
+        console.log("    IOConnectCallMethod Selector = " + selector)
+        console.log("    IOConnectCallMethod ScalarInputCount = " + input_scalar_count)
+        for(var i=0;i<input_scalar_count;i++){
+            var val = input_scalar.add(0x8 * i).readPointer();
+            console.log("        input[" + i + "] = " + val );
+            try{
+                if (HEXDUMP_IOCONNECTCALL_POINTERS)
+                    console.log(hexdump(val, {
+                      offset: 0,
+                      length: 64,
+                      header: true,
+                      ansi: true
+                    }));
+            } catch(e){};
+        }
+        if(BACKTRACE_IOCONNECTCALL)
+            console.log('        IOConnectCallMethod backtrace:\n        ' +
+            Thread.backtrace(this.context, Backtracer.ACCURATE)
+                .map(DebugSymbol.fromAddress).join('\n        ') + '\n');
+
     },
     onLeave: function(retval){
 
@@ -155,9 +179,9 @@ Interceptor.attach(_ioconnectcallasyncscalarmethod_addr, {
             } catch(e){};
         }
         if(BACKTRACE_IOCONNECTCALL)
-            console.log('    IOConnectCallAsyncScalarMethod backtrace:\n    ' +
+            console.log('        IOConnectCallAsyncScalarMethod backtrace:\n        ' +
             Thread.backtrace(this.context, Backtracer.ACCURATE)
-                .map(DebugSymbol.fromAddress).join('\n    ') + '\n');
+                .map(DebugSymbol.fromAddress).join('\n        ') + '\n');
     },
     onLeave: function(retval){
 
