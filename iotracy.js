@@ -7,6 +7,7 @@
  * ----
  *  TODO:
  *  Trace IOConnectCallStructMethod and IOConnectCallScalarMethod explicitly
+ *  Option to write call args to file
 */
 
 // Settings
