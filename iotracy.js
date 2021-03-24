@@ -2,8 +2,11 @@
  * IOTracy.js
  * To run this script: frida -U bluetoothd --no-pause -I iotracy.js
  * - Trace libdipatch calls (credit: Jiska)
- * - Trace calls to iokit IOConnectCallMethod
+ * - Trace calls to iokit IOConnectCallMethod, IOConnectCallAsyncMethod, IOConnectCallAsyncScalarMethod, IOConnectCallAsyncStructMethod
  * - Trace calls to iokit IOServiceOpen ? (credit: mwr labs)
+ * ----
+ *  TODO:
+ *  Trace IOConnectCallStructMethod and IOConnectCallScalarMethod explicitly
 */
 
 // Helper Functions
